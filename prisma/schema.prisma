@@ -14,7 +14,22 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(uuid())
-  email    String @unique
+  id       String   @id @default(uuid())
+  email    String   @unique
   password String
+  clients  Client[]
+
+  @@index([id])
+}
+
+model Client {
+  id     String @id @default(uuid())
+  phone  String
+  name   String
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([name, userId])
+  @@index([userId])
+  @@index([id])
 }
