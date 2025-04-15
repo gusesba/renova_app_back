@@ -49,8 +49,28 @@ export class ClientsController {
 
   @UseGuards(AuthGuard)
   @Get()
-  findAll(@Request() request) {
+  findAll(
+    @Request() request,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+    @Query('orderByField') orderByField?: 'id' | 'name' | 'phone',
+    @Query('orderByDirection') orderByDirection?: 'asc' | 'desc',
+    @Query('id') id?: string,
+    @Query('name') name?: string,
+    @Query('phone') phone?: string,
+  ) {
     const userId = request.user.userId;
-    return this.clientsService.findAll(userId);
+    return this.clientsService.findAll(userId, {
+      page: page ? Number(page) : 1,
+      pageSize: pageSize ? Number(pageSize) : 10,
+      orderBy: orderByField && orderByDirection
+        ? { field: orderByField, direction: orderByDirection }
+        : undefined,
+      filters: {
+        ...(id && { id }),
+        ...(name && { name }),
+        ...(phone && { phone }),
+      },
+    });
   }
 }
