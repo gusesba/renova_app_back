@@ -14,22 +14,43 @@ datasource db {
 }
 
 model User {
-  id       String   @id @default(uuid())
-  email    String   @unique
+  id       String    @id @default(uuid())
+  email    String    @unique
   password String
   clients  Client[]
+  products Product[]
 
   @@index([id])
 }
 
 model Client {
-  id     String @id @default(uuid())
-  phone  String
-  name   String
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
+  id       String    @id @default(uuid())
+  userId   String
+  user     User      @relation(fields: [userId], references: [id])
+  phone    String
+  name     String
+  products Product[]
 
   @@unique([name, userId])
   @@index([userId])
+  @@index([id])
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  price       Float
+  type        String
+  brand       String
+  size        String
+  color       String
+  providerId  String
+  provider    Client   @relation(fields: [providerId], references: [id])
+  entryDate   DateTime @default(now())
+  description String
+
+  @@index([userId])
+  @@index([providerId])
   @@index([id])
 }

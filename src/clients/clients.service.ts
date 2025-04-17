@@ -56,11 +56,19 @@ export class ClientsService {
     })),
   };
 
-  return this.prisma.client.findMany({
-    where,
-    skip: (page - 1) * pageSize,
-    take: pageSize,
-    orderBy: orderBy ? { [orderBy.field]: orderBy.direction } : undefined,
-  });
+  const [items, totalCount] = await Promise.all([
+    this.prisma.client.findMany({
+      where,
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      orderBy: orderBy ? { [orderBy.field]: orderBy.direction } : undefined,
+    }),
+    this.prisma.client.count({ where }),
+  ]);
+
+  return {
+    items,
+    totalPages: Math.ceil(totalCount / pageSize),
+  };
 }
 }
