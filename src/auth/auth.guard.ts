@@ -9,24 +9,26 @@ import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
+
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const authorization = request.headers.authorization;
-    const token = authorization?.split(' ')[1];
+
+    // Verificando os cookies
+    const token = request.cookies['token']; // 'token' deve ser o nome do seu cookie
 
     if (!token) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Token não fornecido');
     }
 
     try {
       const tokenPayload = await this.jwtService.verifyAsync(token);
       request.user = {
         userId: tokenPayload.sub,
-        emai: tokenPayload.email,
+        email: tokenPayload.email, // Corrigi a chave 'emai' para 'email'
       };
       return true;
     } catch (err) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Token inválido ou expirado');
     }
   }
 }
