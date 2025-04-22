@@ -14,11 +14,13 @@ datasource db {
 }
 
 model User {
-  id       String    @id @default(uuid())
-  email    String    @unique
-  password String
-  clients  Client[]
-  products Product[]
+  id            String        @id @default(uuid())
+  email         String        @unique
+  password      String
+  clients       Client[]
+  products      Product[]
+  sellsProducts SellProduct[]
+  sells         Sell[]
 
   @@index([id])
 }
@@ -30,6 +32,7 @@ model Client {
   phone    String
   name     String
   products Product[]
+  sells    Sell[]
 
   @@unique([name, userId])
   @@index([userId])
@@ -37,20 +40,51 @@ model Client {
 }
 
 model Product {
-  id          String   @id @default(uuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  price       Float
-  type        String
-  brand       String
-  size        String
-  color       String
-  providerId  String
-  provider    Client   @relation(fields: [providerId], references: [id])
-  entryDate   DateTime @default(now())
-  description String
+  id            String        @id @default(uuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  price         Float
+  type          String
+  brand         String
+  size          String
+  color         String
+  providerId    String
+  provider      Client        @relation(fields: [providerId], references: [id])
+  entryDate     DateTime      @default(now())
+  description   String
+  sellsProducts SellProduct[]
 
   @@index([userId])
   @@index([providerId])
+  @@index([id])
+}
+
+model SellProduct {
+  id        String  @id @default(uuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  sellId    String
+  sell      Sell    @relation(fields: [sellId], references: [id])
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+  @@index([id])
+}
+
+model Sell {
+  id           String        @id @default(uuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+  clientId     String
+  client       Client        @relation(fields: [clientId], references: [id])
+  date         DateTime      @default(now())
+  type         String
+  sellProducts SellProduct[]
+
+  @@index([userId])
+  @@index([clientId])
   @@index([id])
 }
