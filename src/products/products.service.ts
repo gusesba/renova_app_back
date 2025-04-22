@@ -77,7 +77,7 @@ export class ProductsService {
       size?: string;
       color?: string;
       description?: string;
-      providerId?: string;
+      providerName?: string;
     };
   }) {
     const {
@@ -87,27 +87,47 @@ export class ProductsService {
       filters = {},
     } = options;
 
-    const where = {
-      userId,
-      AND: Object.entries(filters).map(([key, value]) => ({
-        [key]: { contains: value, mode: 'insensitive' },
-      })),
-    };
+    const where: any = {
+  userId,
+  AND: [],
+};
 
-    const [items, totalCount] = await Promise.all([
-      this.prisma.product.findMany({
-        where,
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        orderBy: orderBy ? { [orderBy.field]: orderBy.direction } : undefined,
-        include: { provider: true },
-      }),
-      this.prisma.product.count({ where }),
-    ]);
-
-    return {
-      items,
-      totalPages: Math.ceil(totalCount / pageSize),
-    };
+// Filtros diretos
+Object.entries(filters).forEach(([key, value]) => {
+  if (key !== 'providerName') {
+    where.AND.push({
+      [key]: { contains: value, mode: 'insensitive' },
+    });
   }
+});
+
+// Filtro por nome do fornecedor (relacionamento com Client)
+if (filters.providerName) {
+  where.AND.push({
+    provider: {
+      name: { contains: filters.providerName, mode: 'insensitive' },
+    },
+  });
+}
+
+const [items, totalCount] = await Promise.all([
+  this.prisma.product.findMany({
+    where,
+    skip: (page - 1) * pageSize,
+    take: pageSize,
+    orderBy: orderBy ? { [orderBy.field]: orderBy.direction } : undefined,
+    include: { provider: true },
+  }),
+  this.prisma.product.count({ where }),
+]);
+
+return {
+  items: items.map((item) => ({
+    ...item,
+    providerName: item.provider.name,
+    provider: undefined,   // Remove o objeto inteiro se quiser só o nome
+  })),
+  totalPages: Math.ceil(totalCount / pageSize),
+};
+}
 }

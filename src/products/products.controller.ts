@@ -79,7 +79,7 @@ export class ProductsController {
     @Query('size') size?: string,
     @Query('color') color?: string,
     @Query('description') description?: string,
-    @Query('providerId') providerId?: string,
+    @Query('providerName') providerName?: string,
   ) {
     const userId = request.user.userId;
     return this.productsService.findAll(userId, {
@@ -95,7 +95,7 @@ export class ProductsController {
         ...(size && { size }),
         ...(color && { color }),
         ...(description && { description }),
-        ...(providerId && { providerId }),
+        ...(providerName && { providerName }),
       },
     });
   }
