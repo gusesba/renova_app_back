@@ -155,7 +155,7 @@ export class SellsService {
       include: {
         sellProducts: {
           include: {
-            product: true,
+            product: { include: { provider: true } },
           },
         },
       },
@@ -165,6 +165,12 @@ export class SellsService {
       throw new NotFoundException('Venda não encontrada');
     }
 
-    return { items: sellWithProducts.sellProducts.map((sp) => sp.product) };
+    return {
+      items: sellWithProducts.sellProducts.map((sp) => ({
+        ...sp.product,
+        providerName: sp.product.provider.name,
+        provider: undefined,
+      })),
+    };
   }
 }
