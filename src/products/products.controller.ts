@@ -59,10 +59,10 @@ export class ProductsController {
   }
 
   @UseGuards(AuthGuard)
-  @Get(':id')
-  findOne(@Request() request, @Param('id') id: string) {
+  @Get('sell/:id')
+  findOneUnsold(@Request() request, @Param('id') id: string) {
     const userId = request.user.userId;
-    return this.productsService.findOne(userId, id);
+    return this.productsService.findOneUnsold(userId, id);
   }
 
   @UseGuards(AuthGuard)
@@ -98,5 +98,84 @@ export class ProductsController {
         ...(providerName && { providerName }),
       },
     });
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('sold')
+  findAllSold(
+    @Request() request,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+    @Query('orderByField') orderByField?: 'id' | 'price' | 'type' | 'brand' | 'size' | 'color' | 'entryDate',
+    @Query('orderByDirection') orderByDirection?: 'asc' | 'desc',
+    @Query('id') id?: string,
+    @Query('type') type?: string,
+    @Query('brand') brand?: string,
+    @Query('size') size?: string,
+    @Query('color') color?: string,
+    @Query('description') description?: string,
+    @Query('providerName') providerName?: string,
+  ) {
+    const userId = request.user.userId;
+    return this.productsService.findAll(userId, {
+      page: page ? Number(page) : 1,
+      pageSize: pageSize ? Number(pageSize) : 10,
+      orderBy: orderByField && orderByDirection
+        ? { field: orderByField, direction: orderByDirection }
+        : undefined,
+      filters: {
+        ...(id && { id }),
+        ...(type && { type }),
+        ...(brand && { brand }),
+        ...(size && { size }),
+        ...(color && { color }),
+        ...(description && { description }),
+        ...(providerName && { providerName }),
+      },
+      soldStatus: 'sold',
+    });
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('unsold')
+  findAllUnsold(
+    @Request() request,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+    @Query('orderByField') orderByField?: 'id' | 'price' | 'type' | 'brand' | 'size' | 'color' | 'entryDate',
+    @Query('orderByDirection') orderByDirection?: 'asc' | 'desc',
+    @Query('id') id?: string,
+    @Query('type') type?: string,
+    @Query('brand') brand?: string,
+    @Query('size') size?: string,
+    @Query('color') color?: string,
+    @Query('description') description?: string,
+    @Query('providerName') providerName?: string,
+  ) {
+    console.log('teste')
+    const userId = request.user.userId;
+    return this.productsService.findAll(userId, {
+      page: page ? Number(page) : 1,
+      pageSize: pageSize ? Number(pageSize) : 10,
+      orderBy: orderByField && orderByDirection
+        ? { field: orderByField, direction: orderByDirection }
+        : undefined,
+      filters: {
+        ...(id && { id }),
+        ...(type && { type }),
+        ...(brand && { brand }),
+        ...(size && { size }),
+        ...(color && { color }),
+        ...(description && { description }),
+        ...(providerName && { providerName }),
+      },
+      soldStatus: 'unsold',
+    });
+  }
+  @UseGuards(AuthGuard)
+  @Get(':id')
+  findOne(@Request() request, @Param('id') id: string) {
+    const userId = request.user.userId;
+    return this.productsService.findOne(userId, id);
   }
 }
