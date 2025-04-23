@@ -96,6 +96,8 @@ export class ProductsController {
     @Query('color') color?: string,
     @Query('description') description?: string,
     @Query('providerName') providerName?: string,
+    @Query('entryDateStart') entryDateStart?: string,
+    @Query('entryDateEnd') entryDateEnd?: string,
   ) {
     const userId = request.user.userId;
     return this.productsService.findAll(userId, {
@@ -113,6 +115,8 @@ export class ProductsController {
         ...(color && { color }),
         ...(description && { description }),
         ...(providerName && { providerName }),
+        ...(entryDateStart && { entryDateStart }),
+        ...(entryDateEnd && { entryDateEnd }),
       },
     });
   }
@@ -140,6 +144,8 @@ export class ProductsController {
     @Query('color') color?: string,
     @Query('description') description?: string,
     @Query('providerName') providerName?: string,
+    @Query('entryDateStart') entryDateStart?: string,
+    @Query('entryDateEnd') entryDateEnd?: string,
   ) {
     const userId = request.user.userId;
     return this.productsService.findAll(userId, {
@@ -157,6 +163,8 @@ export class ProductsController {
         ...(color && { color }),
         ...(description && { description }),
         ...(providerName && { providerName }),
+        ...(entryDateStart && { entryDateStart }),
+        ...(entryDateEnd && { entryDateEnd }),
       },
       soldStatus: 'sold',
     });
@@ -185,8 +193,9 @@ export class ProductsController {
     @Query('color') color?: string,
     @Query('description') description?: string,
     @Query('providerName') providerName?: string,
+    @Query('entryDateStart') entryDateStart?: string,
+    @Query('entryDateEnd') entryDateEnd?: string,
   ) {
-    console.log('teste');
     const userId = request.user.userId;
     return this.productsService.findAll(userId, {
       page: page ? Number(page) : 1,
@@ -203,6 +212,8 @@ export class ProductsController {
         ...(color && { color }),
         ...(description && { description }),
         ...(providerName && { providerName }),
+        ...(entryDateStart && { entryDateStart }),
+        ...(entryDateEnd && { entryDateEnd }),
       },
       soldStatus: 'unsold',
     });

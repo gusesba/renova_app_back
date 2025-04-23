@@ -114,6 +114,8 @@ export class ProductsService {
         color?: string;
         description?: string;
         providerName?: string;
+        entryDateStart?: string;
+        entryDateEnd?: string;
       };
       soldStatus?: 'sold' | 'unsold' | 'all';
     },
@@ -131,9 +133,12 @@ export class ProductsService {
       AND: [],
     };
 
-    // Filtros diretos
+    // Filtros diretos (exceto data e providerName)
     Object.entries(filters).forEach(([key, value]) => {
-      if (key !== 'providerName') {
+      if (
+        value &&
+        !['providerName', 'entryDateStart', 'entryDateEnd'].includes(key)
+      ) {
         where.AND.push({
           [key]: { contains: value, mode: 'insensitive' },
         });
@@ -147,6 +152,22 @@ export class ProductsService {
           name: { contains: filters.providerName, mode: 'insensitive' },
         },
       });
+    }
+
+    // Filtro por intervalo de datas
+    if (filters.entryDateStart || filters.entryDateEnd) {
+      const dateFilter: any = {};
+      if (filters.entryDateStart) {
+        dateFilter.gte = new Date(filters.entryDateStart);
+      }
+      if (filters.entryDateEnd) {
+        // Para incluir o dia inteiro, adiciona 1 dia e filtra por menor que o próximo dia
+        const endDate = new Date(filters.entryDateEnd);
+        endDate.setDate(endDate.getDate() + 1);
+        endDate.setHours(23, 59, 59, 999); // Define o horário para o final do dia
+        dateFilter.lt = endDate;
+      }
+      where.AND.push({ entryDate: dateFilter });
     }
 
     // Filtro por status de venda
