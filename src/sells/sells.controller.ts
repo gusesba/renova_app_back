@@ -1,4 +1,4 @@
-import { Body, Controller, Post, BadRequestException, UseGuards, Request } from '@nestjs/common';
+import { Body, Controller, Post, BadRequestException, UseGuards, Request, Get, Query } from '@nestjs/common';
 import { SellsService } from './sells.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 
@@ -29,6 +29,34 @@ export class SellsController {
       productIds,
       type,
       date: date ? new Date(date) : undefined,
+    });
+  }
+
+  @UseGuards(AuthGuard)
+  @Get()
+  findAll(
+    @Request() request,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+    @Query('orderByField') orderByField?: 'id' | 'type' | 'date',
+    @Query('orderByDirection') orderByDirection?: 'asc' | 'desc',
+    @Query('id') id?: string,
+    @Query('type') type?: string,
+    @Query('clientName') clientName?: string,
+  ) {
+    const userId = request.user.userId;
+
+    return this.sellsService.findAll(userId, {
+      page: page ? Number(page) : 1,
+      pageSize: pageSize ? Number(pageSize) : 10,
+      orderBy: orderByField && orderByDirection
+        ? { field: orderByField, direction: orderByDirection }
+        : undefined,
+      filters: {
+        ...(id && { id }),
+        ...(type && { type }),
+        ...(clientName && { clientName }),
+      },
     });
   }
 }
