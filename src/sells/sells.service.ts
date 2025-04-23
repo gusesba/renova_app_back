@@ -81,6 +81,8 @@ export class SellsService {
         id?: string;
         type?: string;
         clientName?: string;
+        dateStart?: string;
+        dateEnd?: string;
       };
     },
   ): Promise<{
@@ -112,6 +114,24 @@ export class SellsService {
         client: {
           name: { contains: filters.clientName, mode: 'insensitive' },
         },
+      });
+    }
+
+    // Filtro por data (intervalo)
+    if (filters.dateStart || filters.dateEnd) {
+      const dateFilter: any = {};
+      if (filters.dateStart) {
+        dateFilter.gte = new Date(filters.dateStart);
+      }
+      if (filters.dateEnd) {
+        const endDate = new Date(filters.dateEnd);
+        endDate.setDate(endDate.getDate() + 1); // adiciona um dia para incluir o final
+        endDate.setHours(23, 59, 59, 999); // garante o dia inteiro
+        dateFilter.lte = endDate;
+      }
+
+      where.AND.push({
+        date: dateFilter,
       });
     }
 

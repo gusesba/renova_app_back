@@ -55,6 +55,8 @@ export class SellsController {
     @Query('id') id?: string,
     @Query('type') type?: string,
     @Query('clientName') clientName?: string,
+    @Query('dateStart') dateStart?: string,
+    @Query('dateEnd') dateEnd?: string,
   ) {
     const userId = request.user.userId;
 
@@ -69,6 +71,8 @@ export class SellsController {
         ...(id && { id }),
         ...(type && { type }),
         ...(clientName && { clientName }),
+        ...(dateStart && { dateStart }),
+        ...(dateEnd && { dateEnd }),
       },
     });
   }
