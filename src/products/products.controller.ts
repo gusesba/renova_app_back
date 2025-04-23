@@ -19,16 +19,20 @@ export class ProductsController {
 
   @UseGuards(AuthGuard)
   @Post()
-  create(@Request() request, @Body() input: {
-    price: number;
-    type: string;
-    brand: string;
-    size: string;
-    color: string;
-    providerId: string;
-    description: string;
-    entryDate?: Date;
-  }) {
+  create(
+    @Request() request,
+    @Body()
+    input: {
+      price: number;
+      type: string;
+      brand: string;
+      size: string;
+      color: string;
+      providerId: string;
+      description: string;
+      entryDate?: Date;
+    },
+  ) {
     const userId = request.user.userId;
     return this.productsService.create({ ...input, userId });
   }
@@ -42,17 +46,21 @@ export class ProductsController {
 
   @UseGuards(AuthGuard)
   @Put()
-  edit(@Request() request, @Body() input: {
-    id: string;
-    price?: number;
-    type?: string;
-    brand?: string;
-    size?: string;
-    color?: string;
-    providerId?: string;
-    description?: string;
-    entryDate?: Date;
-  }) {
+  edit(
+    @Request() request,
+    @Body()
+    input: {
+      id: string;
+      price?: number;
+      type?: string;
+      brand?: string;
+      size?: string;
+      color?: string;
+      providerId?: string;
+      description?: string;
+      entryDate?: Date;
+    },
+  ) {
     const userId = request.user.userId;
     const { id, ...data } = input;
     return this.productsService.edit(userId, id, data);
@@ -71,7 +79,15 @@ export class ProductsController {
     @Request() request,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
-    @Query('orderByField') orderByField?: 'id' | 'price' | 'type' | 'brand' | 'size' | 'color' | 'entryDate',
+    @Query('orderByField')
+    orderByField?:
+      | 'id'
+      | 'price'
+      | 'type'
+      | 'brand'
+      | 'size'
+      | 'color'
+      | 'entryDate',
     @Query('orderByDirection') orderByDirection?: 'asc' | 'desc',
     @Query('id') id?: string,
     @Query('type') type?: string,
@@ -85,9 +101,10 @@ export class ProductsController {
     return this.productsService.findAll(userId, {
       page: page ? Number(page) : 1,
       pageSize: pageSize ? Number(pageSize) : 10,
-      orderBy: orderByField && orderByDirection
-        ? { field: orderByField, direction: orderByDirection }
-        : undefined,
+      orderBy:
+        orderByField && orderByDirection
+          ? { field: orderByField, direction: orderByDirection }
+          : undefined,
       filters: {
         ...(id && { id }),
         ...(type && { type }),
@@ -106,7 +123,15 @@ export class ProductsController {
     @Request() request,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
-    @Query('orderByField') orderByField?: 'id' | 'price' | 'type' | 'brand' | 'size' | 'color' | 'entryDate',
+    @Query('orderByField')
+    orderByField?:
+      | 'id'
+      | 'price'
+      | 'type'
+      | 'brand'
+      | 'size'
+      | 'color'
+      | 'entryDate',
     @Query('orderByDirection') orderByDirection?: 'asc' | 'desc',
     @Query('id') id?: string,
     @Query('type') type?: string,
@@ -120,9 +145,10 @@ export class ProductsController {
     return this.productsService.findAll(userId, {
       page: page ? Number(page) : 1,
       pageSize: pageSize ? Number(pageSize) : 10,
-      orderBy: orderByField && orderByDirection
-        ? { field: orderByField, direction: orderByDirection }
-        : undefined,
+      orderBy:
+        orderByField && orderByDirection
+          ? { field: orderByField, direction: orderByDirection }
+          : undefined,
       filters: {
         ...(id && { id }),
         ...(type && { type }),
@@ -142,7 +168,15 @@ export class ProductsController {
     @Request() request,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
-    @Query('orderByField') orderByField?: 'id' | 'price' | 'type' | 'brand' | 'size' | 'color' | 'entryDate',
+    @Query('orderByField')
+    orderByField?:
+      | 'id'
+      | 'price'
+      | 'type'
+      | 'brand'
+      | 'size'
+      | 'color'
+      | 'entryDate',
     @Query('orderByDirection') orderByDirection?: 'asc' | 'desc',
     @Query('id') id?: string,
     @Query('type') type?: string,
@@ -152,14 +186,15 @@ export class ProductsController {
     @Query('description') description?: string,
     @Query('providerName') providerName?: string,
   ) {
-    console.log('teste')
+    console.log('teste');
     const userId = request.user.userId;
     return this.productsService.findAll(userId, {
       page: page ? Number(page) : 1,
       pageSize: pageSize ? Number(pageSize) : 10,
-      orderBy: orderByField && orderByDirection
-        ? { field: orderByField, direction: orderByDirection }
-        : undefined,
+      orderBy:
+        orderByField && orderByDirection
+          ? { field: orderByField, direction: orderByDirection }
+          : undefined,
       filters: {
         ...(id && { id }),
         ...(type && { type }),

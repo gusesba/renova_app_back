@@ -1,4 +1,14 @@
-import { Body, Controller, Post, BadRequestException, UseGuards, Request, Get, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  BadRequestException,
+  UseGuards,
+  Request,
+  Get,
+  Query,
+  Param,
+} from '@nestjs/common';
 import { SellsService } from './sells.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 
@@ -15,12 +25,14 @@ export class SellsController {
 
   @UseGuards(AuthGuard)
   @Post()
-  async createSell(@Request() request,@Body() body: CreateSellBody) {
+  async createSell(@Request() request, @Body() body: CreateSellBody) {
     const userId = request.user.userId;
-    const {clientId, productIds, type, date} = body;
+    const { clientId, productIds, type, date } = body;
 
     if (!userId || !clientId || !Array.isArray(productIds) || !type) {
-      throw new BadRequestException('Parâmetros obrigatórios ausentes ou inválidos');
+      throw new BadRequestException(
+        'Parâmetros obrigatórios ausentes ou inválidos',
+      );
     }
 
     return this.sellsService.createSell({
@@ -49,14 +61,23 @@ export class SellsController {
     return this.sellsService.findAll(userId, {
       page: page ? Number(page) : 1,
       pageSize: pageSize ? Number(pageSize) : 10,
-      orderBy: orderByField && orderByDirection
-        ? { field: orderByField, direction: orderByDirection }
-        : undefined,
+      orderBy:
+        orderByField && orderByDirection
+          ? { field: orderByField, direction: orderByDirection }
+          : undefined,
       filters: {
         ...(id && { id }),
         ...(type && { type }),
         ...(clientName && { clientName }),
       },
     });
+  }
+
+  @UseGuards(AuthGuard)
+  @Get(':id/products')
+  findSellProducts(@Request() request, @Param('id') id: string) {
+    const userId = request.user.id;
+
+    return this.sellsService.findSellProducts(userId, id);
   }
 }

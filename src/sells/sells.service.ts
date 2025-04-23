@@ -68,81 +68,103 @@ export class SellsService {
     return sell;
   }
 
-  async findAll(userId: string, options: {
-  page?: number;
-  pageSize?: number;
-  orderBy?: {
-    field: 'id' | 'type' | 'date';
-    direction: 'asc' | 'desc';
-  };
-  filters?: {
-    id?: string;
-    type?: string;
-    clientName?: string;
-  };
-}): Promise<{
-  items: Sell[];
-  totalPages: number;
-}> {
-  const {
-    page = 1,
-    pageSize = 10,
-    orderBy,
-    filters = {},
-  } = options;
+  async findAll(
+    userId: string,
+    options: {
+      page?: number;
+      pageSize?: number;
+      orderBy?: {
+        field: 'id' | 'type' | 'date';
+        direction: 'asc' | 'desc';
+      };
+      filters?: {
+        id?: string;
+        type?: string;
+        clientName?: string;
+      };
+    },
+  ): Promise<{
+    items: Sell[];
+    totalPages: number;
+  }> {
+    const { page = 1, pageSize = 10, orderBy, filters = {} } = options;
 
-  const where: any = {
-    userId,
-    AND: [],
-  };
+    const where: any = {
+      userId,
+      AND: [],
+    };
 
-  // Filtros diretos
-  if (filters.id) {
-    where.AND.push({
-      id: { contains: filters.id, mode: 'insensitive' },
-    });
+    // Filtros diretos
+    if (filters.id) {
+      where.AND.push({
+        id: { contains: filters.id, mode: 'insensitive' },
+      });
+    }
+
+    if (filters.type) {
+      where.AND.push({
+        type: { contains: filters.type, mode: 'insensitive' },
+      });
+    }
+
+    if (filters.clientName) {
+      where.AND.push({
+        client: {
+          name: { contains: filters.clientName, mode: 'insensitive' },
+        },
+      });
+    }
+
+    const [sells, totalCount] = await Promise.all([
+      this.prisma.sell.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: orderBy
+          ? { [orderBy.field]: orderBy.direction }
+          : { date: 'desc' },
+        include: {
+          client: true,
+          sellProducts: { include: { product: true } },
+        },
+      }),
+      this.prisma.sell.count({ where }),
+    ]);
+
+    const items: Sell[] = sells.map((sell) => ({
+      id: sell.id,
+      type: sell.type,
+      clientName: sell.client.name,
+      totalProducts: sell.sellProducts.length,
+      date: sell.date,
+      products: sell.sellProducts.map((sp) => sp.product),
+    }));
+
+    return {
+      items,
+      totalPages: Math.ceil(totalCount / pageSize),
+    };
   }
 
-  if (filters.type) {
-    where.AND.push({
-      type: { contains: filters.type, mode: 'insensitive' },
-    });
-  }
-
-  if (filters.clientName) {
-    where.AND.push({
-      client: {
-        name: { contains: filters.clientName, mode: 'insensitive' },
+  async findSellProducts(userId: string, id: string) {
+    const sellWithProducts = await this.prisma.sell.findUnique({
+      where: {
+        id,
+        userId,
       },
-    });
-  }
-
-  const [sells, totalCount] = await Promise.all([
-    this.prisma.sell.findMany({
-      where,
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      orderBy: orderBy ? { [orderBy.field]: orderBy.direction } : { date: 'desc' },
       include: {
-        client: true,
-        sellProducts: {include: { product: true } },
+        sellProducts: {
+          include: {
+            product: true,
+          },
+        },
       },
-    }),
-    this.prisma.sell.count({ where }),
-  ]);
+    });
 
-  const items: Sell[] = sells.map((sell) => ({
-    id: sell.id,
-    type: sell.type,
-    clientName: sell.client.name,
-    totalProducts: sell.sellProducts.length,
-    date: sell.date,
-    products: sell.sellProducts.map((sp) => (sp.product))}))
+    if (!sellWithProducts) {
+      throw new NotFoundException('Venda não encontrada');
+    }
 
-  return {
-    items,
-    totalPages: Math.ceil(totalCount / pageSize),
-  };
-}
-
+    return { items: sellWithProducts.sellProducts.map((sp) => sp.product) };
+  }
 }

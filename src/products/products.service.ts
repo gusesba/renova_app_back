@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
-
 @Injectable()
 export class ProductsService {
   constructor(private prisma: PrismaService) {}
@@ -25,21 +24,25 @@ export class ProductsService {
     try {
       return await this.prisma.product.create({ data });
     } catch (e) {
-      console.log(e)
+      console.log(e);
       throw new InternalServerErrorException('Erro ao criar produto');
     }
   }
 
-  async edit(userId: string, id: string, data: {
-    price?: number;
-    type?: string;
-    brand?: string;
-    size?: string;
-    color?: string;
-    providerId?: string;
-    description?: string;
-    entryDate?: Date;
-  }) {
+  async edit(
+    userId: string,
+    id: string,
+    data: {
+      price?: number;
+      type?: string;
+      brand?: string;
+      size?: string;
+      color?: string;
+      providerId?: string;
+      description?: string;
+      entryDate?: Date;
+    },
+  ) {
     try {
       return await this.prisma.product.update({
         where: { id, userId },
@@ -69,107 +72,116 @@ export class ProductsService {
   }
 
   async findOneUnsold(userId: string, id: string) {
-  const product = await this.prisma.product.findUnique({
-    where: { id },
-    include: {
-      sellsProducts: true,
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      include: {
+        sellsProducts: true,
+      },
+    });
+
+    if (!product || product.userId !== userId) {
+      throw new NotFoundException('Produto não encontrado');
+    }
+
+    if (product.sellsProducts.length > 0) {
+      throw new BadRequestException('Produto já vendido');
+    }
+
+    return product;
+  }
+
+  async findAll(
+    userId: string,
+    options: {
+      page?: number;
+      pageSize?: number;
+      orderBy?: {
+        field:
+          | 'id'
+          | 'price'
+          | 'type'
+          | 'brand'
+          | 'size'
+          | 'color'
+          | 'entryDate';
+        direction: 'asc' | 'desc';
+      };
+      filters?: {
+        id?: string;
+        type?: string;
+        brand?: string;
+        size?: string;
+        color?: string;
+        description?: string;
+        providerName?: string;
+      };
+      soldStatus?: 'sold' | 'unsold' | 'all';
     },
-  });
+  ) {
+    const {
+      page = 1,
+      pageSize = 10,
+      orderBy,
+      filters = {},
+      soldStatus = 'all',
+    } = options;
 
-  if (!product || product.userId !== userId) {
-    throw new NotFoundException('Produto não encontrado');
-  }
+    const where: any = {
+      userId,
+      AND: [],
+    };
 
-  if (product.sellsProducts.length > 0) {
-    throw new BadRequestException('Produto já vendido');
-  }
+    // Filtros diretos
+    Object.entries(filters).forEach(([key, value]) => {
+      if (key !== 'providerName') {
+        where.AND.push({
+          [key]: { contains: value, mode: 'insensitive' },
+        });
+      }
+    });
 
-  return product;
-}
-
-  async findAll(userId: string, options: {
-  page?: number;
-  pageSize?: number;
-  orderBy?: {
-    field: 'id' | 'price' | 'type' | 'brand' | 'size' | 'color' | 'entryDate';
-    direction: 'asc' | 'desc';
-  };
-  filters?: {
-    id?: string;
-    type?: string;
-    brand?: string;
-    size?: string;
-    color?: string;
-    description?: string;
-    providerName?: string;
-  };
-  soldStatus?: 'sold' | 'unsold' | 'all';
-}) {
-  const {
-    page = 1,
-    pageSize = 10,
-    orderBy,
-    filters = {},
-    soldStatus = 'all',
-  } = options;
-
-  const where: any = {
-    userId,
-    AND: [],
-  };
-
-  // Filtros diretos
-  Object.entries(filters).forEach(([key, value]) => {
-    if (key !== 'providerName') {
+    // Filtro por nome do fornecedor (relacionamento com Client)
+    if (filters.providerName) {
       where.AND.push({
-        [key]: { contains: value, mode: 'insensitive' },
+        provider: {
+          name: { contains: filters.providerName, mode: 'insensitive' },
+        },
       });
     }
-  });
 
-  // Filtro por nome do fornecedor (relacionamento com Client)
-  if (filters.providerName) {
-    where.AND.push({
-      provider: {
-        name: { contains: filters.providerName, mode: 'insensitive' },
-      },
-    });
+    // Filtro por status de venda
+    if (soldStatus === 'sold') {
+      where.AND.push({
+        sellsProducts: {
+          some: {}, // pelo menos uma venda associada
+        },
+      });
+    } else if (soldStatus === 'unsold') {
+      where.AND.push({
+        sellsProducts: {
+          none: {}, // nenhuma venda associada
+        },
+      });
+    }
+
+    const [items, totalCount] = await Promise.all([
+      this.prisma.product.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: orderBy ? { [orderBy.field]: orderBy.direction } : undefined,
+        include: { provider: true },
+      }),
+      this.prisma.product.count({ where }),
+    ]);
+
+    return {
+      items: items.map((item) => ({
+        ...item,
+        providerName: item.provider.name,
+        provider: undefined,
+      })),
+      totalPages: Math.ceil(totalCount / pageSize),
+    };
   }
-
-  // Filtro por status de venda
-  if (soldStatus === 'sold') {
-    where.AND.push({
-      sellsProducts: {
-        some: {}, // pelo menos uma venda associada
-      },
-    });
-  } else if (soldStatus === 'unsold') {
-    where.AND.push({
-      sellsProducts: {
-        none: {}, // nenhuma venda associada
-      },
-    });
-  }
-
-  const [items, totalCount] = await Promise.all([
-    this.prisma.product.findMany({
-      where,
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      orderBy: orderBy ? { [orderBy.field]: orderBy.direction } : undefined,
-      include: { provider: true },
-    }),
-    this.prisma.product.count({ where }),
-  ]);
-
-  return {
-    items: items.map((item) => ({
-      ...item,
-      providerName: item.provider.name,
-      provider: undefined,
-    })),
-    totalPages: Math.ceil(totalCount / pageSize),
-  };
-}
-
 }
