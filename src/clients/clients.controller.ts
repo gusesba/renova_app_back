@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   Post,
   Put,
   Query,
@@ -24,20 +25,21 @@ export class ClientsController {
   }
 
   @UseGuards(AuthGuard)
-  @Delete(":id")
-  remove(@Request() request, @Query() id:string) {
+  @Delete(':id')
+  remove(@Request() request, @Query() id: string) {
     const userId = request.user.userId;
     return this.clientsService.remove(userId, id);
   }
 
   @UseGuards(AuthGuard)
-  @Put()
+  @Put(':id')
   edit(
     @Request() request,
-    @Body() input: { phone?: string; name?: string; id: string }
+    @Body() input: { phone?: string; name?: string },
+    @Param('id') id: string,
   ) {
     const userId = request.user.userId;
-    return this.clientsService.edit(userId,input.id,{phone: input.phone, name: input.name});
+    return this.clientsService.edit(userId, id, input);
   }
 
   @UseGuards(AuthGuard)
@@ -63,9 +65,10 @@ export class ClientsController {
     return this.clientsService.findAll(userId, {
       page: page ? Number(page) : 1,
       pageSize: pageSize ? Number(pageSize) : 10,
-      orderBy: orderByField && orderByDirection
-        ? { field: orderByField, direction: orderByDirection }
-        : undefined,
+      orderBy:
+        orderByField && orderByDirection
+          ? { field: orderByField, direction: orderByDirection }
+          : undefined,
       filters: {
         ...(id && { id }),
         ...(name && { name }),

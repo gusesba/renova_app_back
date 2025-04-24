@@ -90,6 +90,7 @@ export class ProductsController {
       | 'entryDate',
     @Query('orderByDirection') orderByDirection?: 'asc' | 'desc',
     @Query('id') id?: string,
+    @Query('price') price?: string,
     @Query('type') type?: string,
     @Query('brand') brand?: string,
     @Query('size') size?: string,
@@ -109,6 +110,7 @@ export class ProductsController {
           : undefined,
       filters: {
         ...(id && { id }),
+        ...(price && { price }),
         ...(type && { type }),
         ...(brand && { brand }),
         ...(size && { size }),
@@ -138,6 +140,7 @@ export class ProductsController {
       | 'entryDate',
     @Query('orderByDirection') orderByDirection?: 'asc' | 'desc',
     @Query('id') id?: string,
+    @Query('price') price?: string,
     @Query('type') type?: string,
     @Query('brand') brand?: string,
     @Query('size') size?: string,
@@ -157,6 +160,7 @@ export class ProductsController {
           : undefined,
       filters: {
         ...(id && { id }),
+        ...(price && { price }),
         ...(type && { type }),
         ...(brand && { brand }),
         ...(size && { size }),
@@ -187,6 +191,7 @@ export class ProductsController {
       | 'entryDate',
     @Query('orderByDirection') orderByDirection?: 'asc' | 'desc',
     @Query('id') id?: string,
+    @Query('price') price?: string,
     @Query('type') type?: string,
     @Query('brand') brand?: string,
     @Query('size') size?: string,
@@ -206,6 +211,7 @@ export class ProductsController {
           : undefined,
       filters: {
         ...(id && { id }),
+        ...(price && { price }),
         ...(type && { type }),
         ...(brand && { brand }),
         ...(size && { size }),

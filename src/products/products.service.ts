@@ -108,6 +108,7 @@ export class ProductsService {
       };
       filters?: {
         id?: string;
+        price?: string;
         type?: string;
         brand?: string;
         size?: string;
@@ -139,9 +140,18 @@ export class ProductsService {
         value &&
         !['providerName', 'entryDateStart', 'entryDateEnd'].includes(key)
       ) {
-        where.AND.push({
-          [key]: { contains: value, mode: 'insensitive' },
-        });
+        if (key === 'price') {
+          const numericValue = parseFloat(value as string);
+          if (!isNaN(numericValue)) {
+            where.AND.push({
+              [key]: numericValue,
+            });
+          }
+        } else {
+          where.AND.push({
+            [key]: { contains: value, mode: 'insensitive' },
+          });
+        }
       }
     });
 
