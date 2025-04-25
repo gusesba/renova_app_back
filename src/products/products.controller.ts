@@ -24,10 +24,10 @@ export class ProductsController {
     @Body()
     input: {
       price: number;
-      type: string;
-      brand: string;
-      size: string;
-      color: string;
+      typeId: string;
+      brandId: string;
+      sizeId: string;
+      colorId: string;
       providerId: string;
       description: string;
       entryDate?: Date;

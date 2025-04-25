@@ -13,10 +13,10 @@ export class ProductsService {
   async create(data: {
     userId: string;
     price: number;
-    type: string;
-    brand: string;
-    size: string;
-    color: string;
+    typeId: string;
+    brandId: string;
+    sizeId: string;
+    colorId: string;
     providerId: string;
     description: string;
     entryDate?: Date;
@@ -34,10 +34,10 @@ export class ProductsService {
     id: string,
     data: {
       price?: number;
-      type?: string;
-      brand?: string;
-      size?: string;
-      color?: string;
+      typeId?: string;
+      brandId?: string;
+      sizeId?: string;
+      colorId?: string;
       providerId?: string;
       description?: string;
       entryDate?: Date;

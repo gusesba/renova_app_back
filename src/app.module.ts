@@ -6,6 +6,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ClientsModule } from './clients/clients.module';
 import { ProductsModule } from './products/products.module';
 import { SellsModule } from './sells/sells.module';
+import { ConfigModule as MyConfig } from './config/config.module';
 
 @Module({
   imports: [
@@ -16,6 +17,8 @@ import { SellsModule } from './sells/sells.module';
     ClientsModule,
     ProductsModule,
     SellsModule,
+    ConfigModule,
+    MyConfig,
   ],
   controllers: [],
   providers: [],

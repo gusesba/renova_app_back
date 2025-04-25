@@ -21,6 +21,10 @@ model User {
   products      Product[]
   sellsProducts SellProduct[]
   sells         Sell[]
+  colors        Color[]
+  sizes         Size[]
+  brands        Brand[]
+  types         Type[]
 
   @@index([id])
 }
@@ -44,10 +48,14 @@ model Product {
   userId        String
   user          User          @relation(fields: [userId], references: [id])
   price         Float
-  type          String
-  brand         String
-  size          String
-  color         String
+  type          Type          @relation(fields: [typeId], references: [id])
+  typeId        String
+  brandId       String
+  brand         Brand         @relation(fields: [brandId], references: [id])
+  size          Size          @relation(fields: [sizeId], references: [id])
+  sizeId        String
+  colorId       String
+  color         Color         @relation(fields: [colorId], references: [id])
   providerId    String
   provider      Client        @relation(fields: [providerId], references: [id])
   entryDate     DateTime      @default(now())
@@ -86,5 +94,45 @@ model Sell {
 
   @@index([userId])
   @@index([clientId])
+  @@index([id])
+}
+
+model Color {
+  id       String    @id @default(uuid())
+  userId   String
+  user     User      @relation(fields: [userId], references: [id])
+  value    String
+  products Product[]
+
+  @@index([id])
+}
+
+model Size {
+  id       String    @id @default(uuid())
+  userId   String
+  user     User      @relation(fields: [userId], references: [id])
+  value    String
+  products Product[]
+
+  @@index([id])
+}
+
+model Brand {
+  id       String    @id @default(uuid())
+  userId   String
+  user     User      @relation(fields: [userId], references: [id])
+  value    String
+  products Product[]
+
+  @@index([id])
+}
+
+model Type {
+  id       String    @id @default(uuid())
+  userId   String
+  user     User      @relation(fields: [userId], references: [id])
+  value    String
+  products Product[]
+
   @@index([id])
 }
