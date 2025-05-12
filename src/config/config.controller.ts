@@ -18,28 +18,28 @@ export class ConfigController {
   @Post('color')
   createColor(@Request() request, @Body() input: { value: string }) {
     const userId = request.user.userId;
-    return this.configService.createColor({ ...input, userId });
+    return this.configService.createConfig({ ...input, userId }, 'color');
   }
 
   @UseGuards(AuthGuard)
   @Post('size')
   createSize(@Request() request, @Body() input: { value: string }) {
     const userId = request.user.userId;
-    return this.configService.createSize({ ...input, userId });
+    return this.configService.createConfig({ ...input, userId }, 'size');
   }
 
   @UseGuards(AuthGuard)
   @Post('brand')
   createBrand(@Request() request, @Body() input: { value: string }) {
     const userId = request.user.userId;
-    return this.configService.createBrand({ ...input, userId });
+    return this.configService.createConfig({ ...input, userId }, 'brand');
   }
 
   @UseGuards(AuthGuard)
   @Post('type')
   createType(@Request() request, @Body() input: { value: string }) {
     const userId = request.user.userId;
-    return this.configService.createType({ ...input, userId });
+    return this.configService.createConfig({ ...input, userId }, 'type');
   }
 
   @Get('color')
@@ -53,8 +53,8 @@ export class ConfigController {
     @Query('value') value?: string,
   ) {
     return this.configService.findAllProductConfig('color', userId, {
-      page: page ? Number(page) : 1,
-      pageSize: pageSize ? Number(pageSize) : 10,
+      page: page,
+      pageSize: pageSize,
       orderBy:
         orderByField && orderByDirection
           ? { field: orderByField, direction: orderByDirection }

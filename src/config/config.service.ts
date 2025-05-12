@@ -11,10 +11,6 @@ type CreateProductConfig = {
 export class ConfigService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createColor(data: CreateProductConfig) {
-    return this.prisma.color.create({ data });
-  }
-
   async findAllProductConfig(
     type: 'color' | 'size' | 'brand' | 'type',
     userId: string,
@@ -31,7 +27,7 @@ export class ConfigService {
       };
     },
   ) {
-    const { page = 1, pageSize = 10, orderBy, filters = {} } = options;
+    const { page = 1, pageSize, orderBy, filters = {} } = options;
 
     const where: any = {
       userId,
@@ -46,12 +42,13 @@ export class ConfigService {
         });
       }
     });
+    const take = pageSize ? Number(pageSize) : undefined;
     const [items, totalCount] = await Promise.all([
       // @ts-ignore
       this.prisma[type].findMany({
         where,
-        skip: (page - 1) * pageSize,
-        take: pageSize,
+        skip: take ? (page - 1) * take : undefined,
+        take: take,
         orderBy: orderBy ? { [orderBy.field]: orderBy.direction } : undefined,
       }),
       // @ts-ignore
@@ -59,20 +56,40 @@ export class ConfigService {
     ]);
 
     return {
-      items,
-      totalPages: Math.ceil(totalCount / pageSize),
+      items: items.map((item) => ({
+        ...item,
+        value: item.value.charAt(0).toUpperCase() + item.value.slice(1),
+      })),
+      totalPages: pageSize ? Math.ceil(totalCount / pageSize) : 1,
     };
   }
 
-  async createSize(data: CreateProductConfig) {
-    return this.prisma.size.create({ data });
+  async createConfig(
+    data: CreateProductConfig,
+    type: 'color' | 'size' | 'brand' | 'type',
+  ) {
+    data.value = data.value.toLocaleLowerCase('pt-BR');
+    const exists = await this.verifyIfExists(type, data.userId, data.value);
+
+    if (exists) {
+      throw new Error(`A configuração já existe!`);
+    }
+
+    // @ts-ignore
+    return this.prisma[type].create({ data });
   }
 
-  async createBrand(data: CreateProductConfig) {
-    return this.prisma.brand.create({ data });
-  }
-
-  async createType(data: CreateProductConfig) {
-    return this.prisma.type.create({ data });
+  async verifyIfExists(
+    type: 'color' | 'size' | 'brand' | 'type',
+    userId: string,
+    value: string,
+  ) {
+    const where: any = {
+      userId,
+      value,
+    };
+    // @ts-ignore
+    const exists = await this.prisma[type].findFirst({ where });
+    return !!exists;
   }
 }
