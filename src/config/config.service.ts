@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from 'generated/prisma';
 import { PrismaService } from 'src/prisma/prisma.service'; // ajuste o caminho conforme necessários
 
 type CreateProductConfig = {
@@ -77,6 +76,20 @@ export class ConfigService {
 
     // @ts-ignore
     return this.prisma[type].create({ data });
+  }
+
+  async deleteConfig(
+    type: 'color' | 'size' | 'brand' | 'type',
+    userId: string,
+    id: string,
+  ) {
+    // @ts-ignore
+    return this.prisma[type].delete({
+      where: {
+        userId,
+        id,
+      },
+    });
   }
 
   async verifyIfExists(

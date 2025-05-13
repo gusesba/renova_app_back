@@ -175,7 +175,15 @@ export class SellsService {
       include: {
         sellProducts: {
           include: {
-            product: { include: { provider: true } },
+            product: {
+              include: {
+                provider: true,
+                type: true,
+                brand: true,
+                size: true,
+                color: true,
+              },
+            },
           },
         },
       },
@@ -188,6 +196,10 @@ export class SellsService {
     return {
       items: sellWithProducts.sellProducts.map((sp) => ({
         ...sp.product,
+        brand: sp.product.brand.value,
+        type: sp.product.type.value,
+        size: sp.product.size.value,
+        color: sp.product.color.value,
         providerName: sp.product.provider.name,
         provider: undefined,
       })),

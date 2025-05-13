@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
   Post,
   Query,
   Request,
@@ -124,5 +126,33 @@ export class ConfigController {
           : undefined,
       filters: { id, value },
     });
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('color/:id')
+  deleteColor(@Request() request, @Param('id') id: string) {
+    const userId = request.user.userId;
+    return this.configService.deleteConfig('color', userId, id);
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('type/:id')
+  deleteType(@Request() request, @Param('id') id: string) {
+    const userId = request.user.userId;
+    return this.configService.deleteConfig('type', userId, id);
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('brand/:id')
+  deleteBrand(@Request() request, @Param('id') id: string) {
+    const userId = request.user.userId;
+    return this.configService.deleteConfig('brand', userId, id);
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('size/:id')
+  deleteSize(@Request() request, @Param('id') id: string) {
+    const userId = request.user.userId;
+    return this.configService.deleteConfig('size', userId, id);
   }
 }

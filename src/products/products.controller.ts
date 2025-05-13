@@ -38,7 +38,7 @@ export class ProductsController {
   }
 
   @UseGuards(AuthGuard)
-  @Delete(':id')
+  @Delete('unsold/:id')
   remove(@Request() request, @Param('id') id: string) {
     const userId = request.user.userId;
     return this.productsService.remove(userId, id);
