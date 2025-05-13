@@ -103,7 +103,8 @@ export class ProductsService {
           | 'brand'
           | 'size'
           | 'color'
-          | 'entryDate';
+          | 'entryDate'
+          | 'providerName';
         direction: 'asc' | 'desc';
       };
       filters?: {
@@ -147,6 +148,30 @@ export class ProductsService {
               [key]: numericValue,
             });
           }
+        } else if (key === 'type') {
+          where.AND.push({
+            type: {
+              value: { contains: filters.type, mode: 'insensitive' },
+            },
+          });
+        } else if (key === 'brand') {
+          where.AND.push({
+            brand: {
+              value: { contains: filters.brand, mode: 'insensitive' },
+            },
+          });
+        } else if (key === 'size') {
+          where.AND.push({
+            size: {
+              value: { contains: filters.size, mode: 'insensitive' },
+            },
+          });
+        } else if (key === 'color') {
+          where.AND.push({
+            color: {
+              value: { contains: filters.color, mode: 'insensitive' },
+            },
+          });
         } else {
           where.AND.push({
             [key]: { contains: value, mode: 'insensitive' },
@@ -195,13 +220,40 @@ export class ProductsService {
       });
     }
 
+    const newOrderBy = orderBy
+      ? orderBy.field === 'type' ||
+        orderBy.field === 'brand' ||
+        orderBy.field === 'size' ||
+        orderBy.field === 'color'
+        ? {
+            [orderBy.field]: {
+              value: orderBy.direction,
+            },
+          }
+        : orderBy.field === 'providerName'
+          ? {
+              provider: {
+                name: orderBy.direction,
+              },
+            }
+          : {
+              [orderBy.field]: orderBy.direction,
+            }
+      : undefined;
+
     const [items, totalCount] = await Promise.all([
       this.prisma.product.findMany({
         where,
         skip: (page - 1) * pageSize,
         take: pageSize,
-        orderBy: orderBy ? { [orderBy.field]: orderBy.direction } : undefined,
-        include: { provider: true },
+        orderBy: newOrderBy,
+        include: {
+          provider: true,
+          type: true,
+          brand: true,
+          size: true,
+          color: true,
+        },
       }),
       this.prisma.product.count({ where }),
     ]);
@@ -210,7 +262,10 @@ export class ProductsService {
       items: items.map((item) => ({
         ...item,
         providerName: item.provider.name,
-        provider: undefined,
+        type: item.type.value,
+        brand: item.brand.value,
+        size: item.size.value,
+        color: item.color.value,
       })),
       totalPages: Math.ceil(totalCount / pageSize),
     };
