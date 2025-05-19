@@ -76,6 +76,10 @@ export class ProductsService {
       where: { id },
       include: {
         sellsProducts: true,
+        type: true,
+        brand: true,
+        size: true,
+        color: true,
       },
     });
 
@@ -87,7 +91,13 @@ export class ProductsService {
       throw new BadRequestException('Produto já vendido');
     }
 
-    return product;
+    return {
+      ...product,
+      type: product.type.value,
+      brand: product.brand.value,
+      size: product.size.value,
+      color: product.color.value,
+    };
   }
 
   async findAll(
