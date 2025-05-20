@@ -230,4 +230,11 @@ export class ProductsController {
     const userId = request.user.userId;
     return this.productsService.findOne(userId, id);
   }
+
+  @UseGuards(AuthGuard)
+  @Get('client/:id/borrowed')
+  findClientBorrowed(@Request() request, @Param('id') id: string) {
+    const userId = request.user.userId;
+    return this.productsService.findClientBorrowed(userId, id);
+  }
 }

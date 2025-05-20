@@ -280,4 +280,34 @@ export class ProductsService {
       totalPages: Math.ceil(totalCount / pageSize),
     };
   }
+
+  async findClientBorrowed(userId: string, clientId: string) {
+    const products = await this.prisma.product.findMany({
+      where: {
+        userId,
+        sellsProducts: {
+          some: {
+            sell: {
+              clientId,
+              type: 'borrow',
+            },
+          },
+        },
+      },
+      include: {
+        type: true,
+        brand: true,
+        size: true,
+        color: true,
+      },
+    });
+
+    return products.map((product) => ({
+      ...product,
+      type: product.type.value,
+      brand: product.brand.value,
+      size: product.size.value,
+      color: product.color.value,
+    }));
+  }
 }
