@@ -1,9 +1,11 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { ProductStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -13,18 +15,45 @@ export class ProductsService {
   async create(data: {
     userId: string;
     price: number;
-    typeId: string;
-    brandId: string;
-    sizeId: string;
-    colorId: string;
+    typeId?: string;
+    brandId?: string;
+    sizeId?: string;
+    colorId?: string;
     providerId: string;
-    description: string;
+    description?: string;
     entryDate?: Date;
+    codeRef?: string;
+    status?: string;
   }) {
+    if (data.codeRef != undefined) {
+      const product = await this.prisma.product.findFirst({
+        where: { codeRef: data.codeRef, userId: data.userId },
+      });
+
+      if (product) {
+        throw new ConflictException('Product already exists');
+      }
+    } else {
+      const result = await this.prisma.$queryRawUnsafe<{ maxCode: number }[]>(
+        `
+  SELECT MAX(CAST("codeRef" AS INTEGER)) as "maxCode"
+  FROM "Product"
+  WHERE "userId" = $1 AND "codeRef" ~ '^\\d+$'
+`,
+        data.userId,
+      );
+
+      const maxCode = result[0]?.maxCode ?? 0;
+
+      data.codeRef = (maxCode + 1).toString();
+    }
+
     try {
-      return await this.prisma.product.create({ data });
+      const statusEnum = data.status as ProductStatus | undefined;
+      return await this.prisma.product.create({
+        data: { ...data, status: statusEnum },
+      });
     } catch (e) {
-      console.log(e);
       throw new InternalServerErrorException('Erro ao criar produto');
     }
   }
@@ -114,7 +143,10 @@ export class ProductsService {
           | 'size'
           | 'color'
           | 'entryDate'
-          | 'providerName';
+          | 'providerName'
+          | 'description'
+          | 'status'
+          | 'codeRef';
         direction: 'asc' | 'desc';
       };
       filters?: {
@@ -128,6 +160,8 @@ export class ProductsService {
         providerName?: string;
         entryDateStart?: string;
         entryDateEnd?: string;
+        status?: string;
+        codeRef?: string;
       };
       soldStatus?: 'sold' | 'unsold' | 'all';
     },
@@ -218,15 +252,13 @@ export class ProductsService {
     // Filtro por status de venda
     if (soldStatus === 'sold') {
       where.AND.push({
-        sellsProducts: {
-          some: {}, // pelo menos uma venda associada
+        status: {
+          not: ProductStatus.DISPONIBLE,
         },
       });
     } else if (soldStatus === 'unsold') {
       where.AND.push({
-        sellsProducts: {
-          none: {}, // nenhuma venda associada
-        },
+        status: ProductStatus.DISPONIBLE,
       });
     }
 

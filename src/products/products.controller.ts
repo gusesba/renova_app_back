@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { ProductStatus } from '@prisma/client';
 
 @Controller('products')
 export class ProductsController {
@@ -24,13 +25,15 @@ export class ProductsController {
     @Body()
     input: {
       price: number;
-      typeId: string;
-      brandId: string;
-      sizeId: string;
-      colorId: string;
+      typeId?: string;
+      brandId?: string;
+      sizeId?: string;
+      colorId?: string;
       providerId: string;
-      description: string;
+      description?: string;
       entryDate?: Date;
+      codeRef?: string;
+      status?: ProductStatus;
     },
   ) {
     const userId = request.user.userId;
@@ -87,7 +90,10 @@ export class ProductsController {
       | 'brand'
       | 'size'
       | 'color'
-      | 'entryDate',
+      | 'entryDate'
+      | 'description'
+      | 'status'
+      | 'codeRef',
     @Query('orderByDirection') orderByDirection?: 'asc' | 'desc',
     @Query('id') id?: string,
     @Query('price') price?: string,
@@ -99,6 +105,8 @@ export class ProductsController {
     @Query('providerName') providerName?: string,
     @Query('entryDateStart') entryDateStart?: string,
     @Query('entryDateEnd') entryDateEnd?: string,
+    @Query('status') status?: string,
+    @Query('codeRef') codeRef?: string,
   ) {
     const userId = request.user.userId;
     return this.productsService.findAll(userId, {
@@ -119,6 +127,8 @@ export class ProductsController {
         ...(providerName && { providerName }),
         ...(entryDateStart && { entryDateStart }),
         ...(entryDateEnd && { entryDateEnd }),
+        ...(status && { status }),
+        ...(codeRef && { codeRef }),
       },
     });
   }
@@ -137,7 +147,10 @@ export class ProductsController {
       | 'brand'
       | 'size'
       | 'color'
-      | 'entryDate',
+      | 'entryDate'
+      | 'description'
+      | 'status'
+      | 'codeRef',
     @Query('orderByDirection') orderByDirection?: 'asc' | 'desc',
     @Query('id') id?: string,
     @Query('price') price?: string,
@@ -149,6 +162,8 @@ export class ProductsController {
     @Query('providerName') providerName?: string,
     @Query('entryDateStart') entryDateStart?: string,
     @Query('entryDateEnd') entryDateEnd?: string,
+    @Query('status') status?: string,
+    @Query('codeRef') codeRef?: string,
   ) {
     const userId = request.user.userId;
     return this.productsService.findAll(userId, {
@@ -169,6 +184,8 @@ export class ProductsController {
         ...(providerName && { providerName }),
         ...(entryDateStart && { entryDateStart }),
         ...(entryDateEnd && { entryDateEnd }),
+        ...(status && { status }),
+        ...(codeRef && { codeRef }),
       },
       soldStatus: 'sold',
     });
@@ -188,7 +205,10 @@ export class ProductsController {
       | 'brand'
       | 'size'
       | 'color'
-      | 'entryDate',
+      | 'entryDate'
+      | 'description'
+      | 'status'
+      | 'codeRef',
     @Query('orderByDirection') orderByDirection?: 'asc' | 'desc',
     @Query('id') id?: string,
     @Query('price') price?: string,
@@ -200,6 +220,8 @@ export class ProductsController {
     @Query('providerName') providerName?: string,
     @Query('entryDateStart') entryDateStart?: string,
     @Query('entryDateEnd') entryDateEnd?: string,
+    @Query('status') status?: string,
+    @Query('codeRef') codeRef?: string,
   ) {
     const userId = request.user.userId;
     return this.productsService.findAll(userId, {
@@ -220,6 +242,8 @@ export class ProductsController {
         ...(providerName && { providerName }),
         ...(entryDateStart && { entryDateStart }),
         ...(entryDateEnd && { entryDateEnd }),
+        ...(status && { status }),
+        ...(codeRef && { codeRef }),
       },
       soldStatus: 'unsold',
     });

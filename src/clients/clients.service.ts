@@ -16,7 +16,7 @@ export class ClientsService {
     obs?: string;
     userId: string;
   }) {
-    if (data.codeRef != undefined) {
+    if (data.codeRef != '' && data.codeRef != undefined) {
       const client = await this.prisma.client.findFirst({
         where: { codeRef: data.codeRef, userId: data.userId },
       });
@@ -24,20 +24,21 @@ export class ClientsService {
       if (client) {
         throw new ConflictException('Client already exists');
       }
+      // Find client with latest codeRef
+    } else {
+      const result = await this.prisma.$queryRawUnsafe<{ maxCode: number }[]>(
+        `
+  SELECT MAX(CAST("codeRef" AS INTEGER)) as "maxCode"
+  FROM "Client"
+  WHERE "userId" = $1 AND "codeRef" ~ '^\\d+$'
+`,
+        data.userId,
+      );
+
+      const maxCode = result[0]?.maxCode ?? 0;
+
+      data.codeRef = (maxCode + 1).toString();
     }
-
-    // Find client with latest codeRef
-    const latestClient = await this.prisma.client.findFirst({
-      where: { userId: data.userId },
-      orderBy: { codeRef: 'desc' },
-    });
-
-    const codeRef = latestClient
-      ? // @ts-ignore
-        (parseInt(latestClient.codeRef) + 1).toString()
-      : '1';
-
-    data.codeRef = codeRef;
 
     try {
       return await this.prisma.client.create({ data });
