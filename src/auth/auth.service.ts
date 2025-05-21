@@ -32,7 +32,7 @@ export class AuthService {
 
   async validateUser(input: AuthInput): Promise<SignInData | null> {
     const user = await this.usersService.findUserByEmail(input.email);
-    if (user && await bcrypt.compare(input.password, user.password)) {
+    if (user && (await bcrypt.compare(input.password, user.password))) {
       return {
         userId: user.id,
         email: user.email,

@@ -93,10 +93,10 @@ export class ProductsService {
 
     return {
       ...product,
-      type: product.type.value,
-      brand: product.brand.value,
-      size: product.size.value,
-      color: product.color.value,
+      type: product.type?.value,
+      brand: product.brand?.value,
+      size: product.size?.value,
+      color: product.color?.value,
     };
   }
 
@@ -272,10 +272,10 @@ export class ProductsService {
       items: items.map((item) => ({
         ...item,
         providerName: item.provider.name,
-        type: item.type.value,
-        brand: item.brand.value,
-        size: item.size.value,
-        color: item.color.value,
+        type: item.type?.value,
+        brand: item.brand?.value,
+        size: item.size?.value,
+        color: item.color?.value,
       })),
       totalPages: Math.ceil(totalCount / pageSize),
     };
@@ -304,10 +304,10 @@ export class ProductsService {
 
     return products.map((product) => ({
       ...product,
-      type: product.type.value,
-      brand: product.brand.value,
-      size: product.size.value,
-      color: product.color.value,
+      type: product.type?.value,
+      brand: product.brand?.value,
+      size: product.size?.value,
+      color: product.color?.value,
     }));
   }
 }

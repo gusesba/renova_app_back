@@ -31,38 +31,54 @@ model User {
 
 model Client {
   id       String    @id @default(uuid())
+  codeRef  String?
   userId   String
   user     User      @relation(fields: [userId], references: [id])
   phone    String
   name     String
+  obs      String?
   products Product[]
   sells    Sell[]
 
   @@unique([name, userId])
+  @@unique([codeRef, userId])
+  @@index([codeRef])
   @@index([userId])
   @@index([id])
 }
 
+enum ProductStatus {
+  DISPONIBLE
+  SOLD
+  BORROWED
+  RETURNED
+  DONATED
+}
+
 model Product {
   id            String        @id @default(uuid())
+  codeRef       String?
   userId        String
   user          User          @relation(fields: [userId], references: [id])
   price         Float
-  type          Type          @relation(fields: [typeId], references: [id])
-  typeId        String
-  brandId       String
-  brand         Brand         @relation(fields: [brandId], references: [id])
-  size          Size          @relation(fields: [sizeId], references: [id])
-  sizeId        String
-  colorId       String
-  color         Color         @relation(fields: [colorId], references: [id])
+  type          Type?         @relation(fields: [typeId], references: [id])
+  typeId        String?
+  brandId       String?
+  brand         Brand?        @relation(fields: [brandId], references: [id])
+  size          Size?         @relation(fields: [sizeId], references: [id])
+  sizeId        String?
+  colorId       String?
+  color         Color?        @relation(fields: [colorId], references: [id])
   providerId    String
   provider      Client        @relation(fields: [providerId], references: [id])
   entryDate     DateTime      @default(now())
-  description   String
+  description   String?
+  status        ProductStatus @default(DISPONIBLE)
   sellsProducts SellProduct[]
 
+  @@unique([codeRef, userId])
   @@index([userId])
+  @@index([codeRef])
   @@index([providerId])
   @@index([id])
 }

@@ -19,7 +19,11 @@ export class ClientsController {
 
   @UseGuards(AuthGuard)
   @Post()
-  create(@Request() request, @Body() input: { phone: string; name: string }) {
+  create(
+    @Request() request,
+    @Body()
+    input: { phone: string; name: string; codeRef?: string; obs?: string },
+  ) {
     const userId = request.user.userId;
     return this.clientsService.create({ ...input, userId });
   }
@@ -55,11 +59,14 @@ export class ClientsController {
     @Request() request,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
-    @Query('orderByField') orderByField?: 'id' | 'name' | 'phone',
+    @Query('orderByField')
+    orderByField?: 'id' | 'name' | 'phone' | 'codeRef' | 'obs',
     @Query('orderByDirection') orderByDirection?: 'asc' | 'desc',
     @Query('id') id?: string,
     @Query('name') name?: string,
     @Query('phone') phone?: string,
+    @Query('codeRef') codeRef?: string,
+    @Query('obs') obs?: string,
   ) {
     const userId = request.user.userId;
     return this.clientsService.findAll(userId, {
@@ -73,6 +80,8 @@ export class ClientsController {
         ...(id && { id }),
         ...(name && { name }),
         ...(phone && { phone }),
+        ...(codeRef && { codeRef }),
+        ...(obs && { obs }),
       },
     });
   }

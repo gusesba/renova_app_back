@@ -9,7 +9,36 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class ClientsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: { phone: string; name: string; userId: string }) {
+  async create(data: {
+    phone: string;
+    name: string;
+    codeRef?: string;
+    obs?: string;
+    userId: string;
+  }) {
+    if (data.codeRef != undefined) {
+      const client = await this.prisma.client.findFirst({
+        where: { codeRef: data.codeRef, userId: data.userId },
+      });
+
+      if (client) {
+        throw new ConflictException('Client already exists');
+      }
+    }
+
+    // Find client with latest codeRef
+    const latestClient = await this.prisma.client.findFirst({
+      where: { userId: data.userId },
+      orderBy: { codeRef: 'desc' },
+    });
+
+    const codeRef = latestClient
+      ? // @ts-ignore
+        (parseInt(latestClient.codeRef) + 1).toString()
+      : '1';
+
+    data.codeRef = codeRef;
+
     try {
       return await this.prisma.client.create({ data });
     } catch (e) {
@@ -44,11 +73,16 @@ export class ClientsService {
     options: {
       page?: number;
       pageSize?: number;
-      orderBy?: { field: 'id' | 'name' | 'phone'; direction: 'asc' | 'desc' };
+      orderBy?: {
+        field: 'id' | 'name' | 'phone' | 'codeRef' | 'obs';
+        direction: 'asc' | 'desc';
+      };
       filters?: {
         id?: string;
         name?: string;
         phone?: string;
+        codeRef?: string;
+        obs?: string;
       };
     },
   ) {
